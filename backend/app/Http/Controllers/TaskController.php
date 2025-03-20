@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
+use App\Http\Resources\TaskResource;
 use App\Models\Task;
+use App\Models\User;
+use Carbon\Carbon;
 
 class TaskController extends Controller
 {
@@ -21,7 +24,7 @@ class TaskController extends Controller
      */
     public function store(StoreTaskRequest $request)
     {
-        //
+        return new TaskResource(Task::create($request->validated()));
     }
 
     /**
@@ -46,5 +49,16 @@ class TaskController extends Controller
     public function destroy(Task $task)
     {
         //
+    }
+
+
+    public function todaysTasks(User $user) {
+        $user = $user->load('tasks')->only('tasks');
+        
+        $tasks = $user['tasks'];
+        
+        return $tasks->filter(function ($a) {
+            return Carbon::parse($a["due_date"])->format('Y-m-d') == today()->format('Y-m-d');
+        });
     }
 }
